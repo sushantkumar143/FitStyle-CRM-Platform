@@ -1,0 +1,75 @@
+version: "3.9"
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: fitstyle-postgres
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-fitstyle}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-fitstyle_secret}
+      POSTGRES_DB: ${POSTGRES_DB:-fitstyle_crm}
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U fitstyle -d fitstyle_crm"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: fitstyle-backend
+    env_file:
+      - .env
+    environment:
+      DATABASE_URL: postgresql+asyncpg://${POSTGRES_USER:-fitstyle}:${POSTGRES_PASSWORD:-fitstyle_secret}@postgres:5432/${POSTGRES_DB:-fitstyle_crm}
+      SYNC_DATABASE_URL: postgresql://${POSTGRES_USER:-fitstyle}:${POSTGRES_PASSWORD:-fitstyle_secret}@postgres:5432/${POSTGRES_DB:-fitstyle_crm}
+      CHANNEL_SERVICE_URL: http://channel-service:8001
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./backend:/app
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: unless-stopped
+
+  channel-service:
+    build:
+      context: ./channel-service
+      dockerfile: Dockerfile
+    container_name: fitstyle-channel-service
+    env_file:
+      - .env
+    environment:
+      CRM_CALLBACK_URL: http://backend:8000/api/campaign-events
+    ports:
+      - "8001:8001"
+    volumes:
+      - ./channel-service:/app
+    depends_on:
+      - backend
+    restart: unless-stopped
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: fitstyle-frontend
+    environment:
+      - BACKEND_URL=http://backend:8000
+    ports:
+      - "5173:5173"
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    depends_on:
+      - backend
+    restart: unless-stopped
+
+volumes:
+  pgdata:
