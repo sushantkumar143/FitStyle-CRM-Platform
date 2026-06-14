@@ -2,7 +2,7 @@ import logging
 from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from app.api import auth, customers, products, orders, segments, campaigns, campaign_events, analytics, copilot
+from app.api import auth, customers, products, orders, segments, campaigns, campaign_events, analytics, copilot, operator
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -47,7 +47,7 @@ app.include_router(campaigns.router, prefix="/api")
 app.include_router(campaign_events.router, prefix="/api")
 app.include_router(analytics.router, prefix="/api")
 app.include_router(copilot.router, prefix="/api")
-
+app.include_router(operator.router, prefix="/api")
 
 @app.get("/health")
 async def health():
