@@ -93,10 +93,14 @@ export default function AnalyticsPage() {
                     <span>{step.name}</span>
                   </div>
                   <div className="flex-1 relative">
-                    <div className="h-8 rounded-lg overflow-hidden bg-[hsl(var(--secondary))]">
-                      <div className="h-full rounded-lg transition-all duration-1000 flex items-center justify-end pr-3"
-                        style={{ width: `${width}%`, backgroundColor: step.color + '30', borderLeft: `3px solid ${step.color}` }}>
-                        <span className="text-sm font-bold" style={{ color: step.color }}>{formatNumber(step.value)}</span>
+                    <div className="h-10 rounded-xl overflow-hidden shadow-inner" style={{ background: 'var(--card-bg)', border: '1px solid var(--card-border)' }}>
+                      <div className="h-full rounded-xl transition-all duration-1000 flex items-center justify-end pr-4 shadow-lg"
+                        style={{ 
+                          width: `${width}%`, 
+                          background: `linear-gradient(90deg, ${step.color}20 0%, ${step.color}80 100%)`, 
+                          borderRight: `3px solid ${step.color}` 
+                        }}>
+                        <span className="text-sm font-bold text-white drop-shadow-md">{formatNumber(step.value)}</span>
                       </div>
                     </div>
                   </div>
@@ -111,16 +115,18 @@ export default function AnalyticsPage() {
           </div>
         </div>
 
-        {/* Channel Performance */}
         <div className="glass-card p-6">
           <h3 className="text-lg font-semibold mb-4">Channel Performance</h3>
           <div className="h-72">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={channelChartData}>
-                <CartesianGrid strokeDasharray="3 3" stroke="rgba(148,163,184,0.1)" />
-                <XAxis dataKey="name" stroke="#64748b" fontSize={12} />
-                <YAxis stroke="#64748b" fontSize={12} />
-                <Tooltip contentStyle={{ background: 'hsl(222, 47%, 9%)', border: '1px solid hsl(217, 33%, 17%)', borderRadius: '0.75rem' }} />
+                <CartesianGrid strokeDasharray="3 3" stroke="var(--card-border)" vertical={false} />
+                <XAxis dataKey="name" stroke="var(--card-text-muted)" fontSize={12} axisLine={false} tickLine={false} />
+                <YAxis stroke="var(--card-text-muted)" fontSize={12} axisLine={false} tickLine={false} />
+                <Tooltip 
+                  cursor={{ fill: 'var(--sidebar-active-bg)' }}
+                  contentStyle={{ background: 'var(--card-bg)', border: '1px solid var(--card-border)', borderRadius: '12px', boxShadow: '0 8px 32px rgba(0,0,0,0.1)', color: 'var(--card-text)' }} 
+                />
                 <Bar dataKey="delivered" fill="#22c55e" radius={[4, 4, 0, 0]} name="Delivered" />
                 <Bar dataKey="opened" fill="#a855f7" radius={[4, 4, 0, 0]} name="Opened" />
                 <Bar dataKey="clicked" fill="#f59e0b" radius={[4, 4, 0, 0]} name="Clicked" />
@@ -132,20 +138,19 @@ export default function AnalyticsPage() {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Top Campaigns */}
         <div className="glass-card p-6">
           <h3 className="text-lg font-semibold mb-4">Top Campaigns</h3>
           <div className="space-y-3">
             {(topCampaigns || []).slice(0, 5).map((c: any, i: number) => (
-              <div key={c.id} className="flex items-center gap-4 p-3 rounded-lg bg-[hsl(var(--secondary))]">
-                <span className="w-6 h-6 rounded-full bg-violet-500/20 text-violet-400 flex items-center justify-center text-xs font-bold">{i + 1}</span>
+              <div key={c.id} className="flex items-center gap-4 p-4 rounded-xl transition-colors" style={{ background: 'var(--page-bg)', border: '1px solid var(--card-border)' }}>
+                <span className="w-8 h-8 rounded-full bg-violet-500/20 text-violet-400 flex items-center justify-center text-sm font-bold shadow-inner">{i + 1}</span>
                 <div className="flex-1 min-w-0">
-                  <p className="font-medium text-sm truncate">{c.name}</p>
-                  <p className="text-xs text-muted-foreground">{c.channel} · {formatNumber(c.audience_size)} audience</p>
+                  <p className="font-semibold truncate" style={{ color: 'var(--premium-card-text)' }}>{c.name}</p>
+                  <p className="text-xs" style={{ color: 'var(--premium-card-text-muted)' }}>{c.channel} · {formatNumber(c.audience_size)} audience</p>
                 </div>
                 <div className="text-right">
-                  <p className="text-sm font-bold text-emerald-400">{formatNumber(c.converted)}</p>
-                  <p className="text-xs text-muted-foreground">conversions</p>
+                  <p className="text-lg font-bold text-emerald-500">{formatNumber(c.converted)}</p>
+                  <p className="text-[10px] uppercase tracking-wider" style={{ color: 'var(--premium-card-text-muted)' }}>conversions</p>
                 </div>
               </div>
             ))}
@@ -155,52 +160,57 @@ export default function AnalyticsPage() {
           </div>
         </div>
 
-        {/* AI Insights */}
         <div className="glass-card p-6">
           <div className="flex items-center gap-2 mb-4">
             <Sparkles className="w-5 h-5 text-violet-400" />
             <h3 className="text-lg font-semibold">AI Marketing Insights</h3>
           </div>
-          <div className="space-y-3">
+          <div className="space-y-4">
             {(insights?.insights || []).map((insight: string, i: number) => (
-              <div key={i} className="p-3 rounded-lg bg-violet-500/5 border border-violet-500/10 text-sm text-muted-foreground">
-                <span className="text-violet-400 mr-1">💡</span> {insight}
+              <div key={i} className="p-4 rounded-xl text-sm leading-relaxed flex items-start gap-3 shadow-inner" style={{ background: 'var(--page-bg)', border: '1px solid var(--card-border)', color: 'var(--premium-card-text)' }}>
+                <span className="text-violet-500 text-lg">✦</span> 
+                <span>{insight}</span>
               </div>
             ))}
           </div>
         </div>
       </div>
 
-      {/* Segment Performance */}
       <div className="glass-card p-6">
         <h3 className="text-lg font-semibold mb-4">Segment Performance</h3>
-        <table className="data-table">
-          <thead>
-            <tr>
-              <th>Segment</th>
-              <th>Audience</th>
-              <th>Campaigns</th>
-              <th>Total Sent</th>
-              <th>Conversions</th>
-              <th>Conv. Rate</th>
-            </tr>
-          </thead>
-          <tbody>
-            {(segPerf || []).map((s: any) => (
-              <tr key={s.segment}>
-                <td className="font-medium">{s.segment}</td>
-                <td>{formatNumber(s.audience_size)}</td>
-                <td>{s.campaigns}</td>
-                <td>{formatNumber(s.total_sent)}</td>
-                <td className="text-emerald-400 font-medium">{formatNumber(s.conversions)}</td>
-                <td><span className={`${s.conversion_rate > 5 ? 'text-emerald-400' : 'text-amber-400'}`}>{s.conversion_rate}%</span></td>
+        <div className="overflow-x-auto">
+          <table className="w-full text-left text-sm" style={{ color: 'var(--premium-card-text)' }}>
+            <thead>
+              <tr className="uppercase tracking-wider text-xs" style={{ borderBottom: '1px solid var(--card-border)', color: 'var(--premium-card-text-muted)' }}>
+                <th className="pb-3 font-semibold">Segment</th>
+                <th className="pb-3 font-semibold">Audience</th>
+                <th className="pb-3 font-semibold">Campaigns</th>
+                <th className="pb-3 font-semibold">Total Sent</th>
+                <th className="pb-3 font-semibold">Conversions</th>
+                <th className="pb-3 font-semibold">Conv. Rate</th>
               </tr>
-            ))}
-            {(!segPerf || segPerf.length === 0) && (
-              <tr><td colSpan={6} className="text-center py-4 text-muted-foreground">No data</td></tr>
-            )}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {(segPerf || []).map((s: any) => (
+                <tr key={s.segment} className="transition-colors" style={{ borderBottom: '1px solid var(--card-border)' }}>
+                  <td className="py-4 font-medium">{s.segment}</td>
+                  <td className="py-4">{formatNumber(s.audience_size)}</td>
+                  <td className="py-4">{s.campaigns}</td>
+                  <td className="py-4">{formatNumber(s.total_sent)}</td>
+                  <td className="py-4 text-emerald-500 font-semibold">{formatNumber(s.conversions)}</td>
+                  <td className="py-4">
+                    <span className={`px-2 py-1 rounded-md text-xs font-bold ${s.conversion_rate > 5 ? 'bg-emerald-500/10 text-emerald-500' : 'bg-amber-500/10 text-amber-500'}`}>
+                      {s.conversion_rate}%
+                    </span>
+                  </td>
+                </tr>
+              ))}
+              {(!segPerf || segPerf.length === 0) && (
+                <tr><td colSpan={6} className="text-center py-8" style={{ color: 'var(--premium-card-text-muted)' }}>No segment data available</td></tr>
+              )}
+            </tbody>
+          </table>
+        </div>
       </div>
     </div>
   )

@@ -46,7 +46,6 @@ export default function App() {
                 <Route path="/campaigns" element={<CampaignsPage />} />
                 <Route path="/campaigns/:id" element={<CampaignDetailPage />} />
                 <Route path="/analytics" element={<AnalyticsPage />} />
-                <Route path="/copilot" element={<CopilotPage />} />
               </Routes>
             </AppLayout>
           </ProtectedRoute>
