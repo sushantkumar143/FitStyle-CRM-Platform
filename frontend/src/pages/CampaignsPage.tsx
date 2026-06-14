@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom'
 import { Megaphone, Plus, Sparkles, Send, MessageSquare, Mail, Phone, Smartphone, ChevronRight } from 'lucide-react'
 import api from '@/lib/api'
 import { formatNumber, formatDate } from '@/lib/utils'
+import { useNotification } from '@/contexts/NotificationContext'
 
 const CHANNELS = [
   { id: 'whatsapp', name: 'WhatsApp', icon: MessageSquare, color: 'from-green-600 to-green-500', desc: 'Best for engagement' },
@@ -15,6 +16,7 @@ const CHANNELS = [
 export default function CampaignsPage() {
   const navigate = useNavigate()
   const queryClient = useQueryClient()
+  const { addNotification } = useNotification()
   const [showWizard, setShowWizard] = useState(false)
   const [step, setStep] = useState(1)
   const [selectedSegment, setSelectedSegment] = useState<any>(null)
@@ -57,6 +59,32 @@ export default function CampaignsPage() {
       queryClient.invalidateQueries({ queryKey: ['campaigns'] })
       setShowWizard(false)
       resetWizard()
+
+      addNotification(
+        'Campaign Dispatch Started',
+        `Campaign "${campaign.name}" is being sent to the audience in the background.`,
+        'info'
+      )
+
+      // Simulate waiting for background task to complete, then fetch stats
+      setTimeout(async () => {
+        try {
+          const res = await api.get(`/campaigns/${campaign.id}`)
+          const stats = res.data.stats || {}
+          const delivered = stats.delivered || 0
+          const failed = stats.failed || 0
+          const opened = stats.opened || 0
+          
+          queryClient.invalidateQueries({ queryKey: ['campaigns'] })
+          addNotification(
+            'Campaign Delivery Completed',
+            `"${campaign.name}" dispatch finished. Delivered: ${delivered}, Failed: ${failed}, Opened: ${opened}.`,
+            failed > 0 ? 'warning' : 'success'
+          )
+        } catch (e) {
+          console.error('Failed to fetch campaign stats', e)
+        }
+      }, 5000)
     },
   })
 
