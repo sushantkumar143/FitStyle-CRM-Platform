@@ -1,0 +1,216 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 222 47% 6%;
+    --foreground: 210 40% 96%;
+    --card: 222 47% 9%;
+    --card-foreground: 210 40% 96%;
+    --primary: 263 70% 58%;
+    --primary-foreground: 210 40% 98%;
+    --secondary: 217 33% 14%;
+    --secondary-foreground: 210 40% 96%;
+    --muted: 217 33% 14%;
+    --muted-foreground: 215 20% 55%;
+    --accent: 217 33% 17%;
+    --accent-foreground: 210 40% 96%;
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 217 33% 17%;
+    --input: 217 33% 17%;
+    --ring: 263 70% 58%;
+    --radius: 0.75rem;
+  }
+
+  * {
+    border-color: hsl(var(--border));
+  }
+
+  body {
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    background: hsl(var(--background));
+    color: hsl(var(--foreground));
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+}
+
+@layer components {
+  .glass-card {
+    background: rgba(15, 23, 42, 0.6);
+    backdrop-filter: blur(12px);
+    border: 1px solid rgba(148, 163, 184, 0.1);
+    border-radius: var(--radius);
+  }
+
+  .gradient-border {
+    position: relative;
+    background: hsl(var(--card));
+    border-radius: var(--radius);
+  }
+
+  .gradient-border::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    padding: 1px;
+    background: linear-gradient(135deg, hsl(263 70% 58% / 0.3), hsl(160 70% 45% / 0.3));
+    -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+    pointer-events: none;
+  }
+
+  .kpi-card {
+    @apply glass-card p-6 transition-all duration-300;
+  }
+
+  .kpi-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 30px rgba(124, 58, 237, 0.15);
+    border-color: rgba(124, 58, 237, 0.3);
+  }
+
+  .sidebar-link {
+    @apply flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-all duration-200;
+    color: hsl(var(--muted-foreground));
+  }
+
+  .sidebar-link:hover {
+    background: hsl(var(--accent));
+    color: hsl(var(--foreground));
+  }
+
+  .sidebar-link.active {
+    background: linear-gradient(135deg, hsl(263 70% 58% / 0.2), hsl(263 70% 58% / 0.1));
+    color: hsl(var(--primary));
+    border-left: 3px solid hsl(var(--primary));
+  }
+
+  .data-table {
+    @apply w-full text-sm;
+  }
+
+  .data-table th {
+    @apply px-4 py-3 text-left font-medium text-xs uppercase tracking-wider;
+    color: hsl(var(--muted-foreground));
+    border-bottom: 1px solid hsl(var(--border));
+  }
+
+  .data-table td {
+    @apply px-4 py-3;
+    border-bottom: 1px solid hsl(var(--border) / 0.5);
+  }
+
+  .data-table tr:hover td {
+    background: hsl(var(--accent) / 0.5);
+  }
+
+  .status-badge {
+    @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium;
+  }
+
+  .status-sent { @apply bg-blue-500/20 text-blue-400; }
+  .status-delivered { @apply bg-green-500/20 text-green-400; }
+  .status-opened { @apply bg-purple-500/20 text-purple-400; }
+  .status-clicked { @apply bg-amber-500/20 text-amber-400; }
+  .status-converted { @apply bg-emerald-500/20 text-emerald-400; }
+  .status-failed { @apply bg-red-500/20 text-red-400; }
+  .status-draft { @apply bg-gray-500/20 text-gray-400; }
+  .status-sending { @apply bg-yellow-500/20 text-yellow-400; }
+
+  .channel-badge {
+    @apply inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold;
+  }
+
+  .channel-whatsapp { @apply bg-green-500/20 text-green-400; }
+  .channel-email { @apply bg-blue-500/20 text-blue-400; }
+  .channel-sms { @apply bg-orange-500/20 text-orange-400; }
+  .channel-rcs { @apply bg-purple-500/20 text-purple-400; }
+
+  .gradient-text {
+    background: linear-gradient(135deg, #7C3AED, #10B981);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .pulse-dot {
+    @apply w-2 h-2 rounded-full bg-green-400;
+    animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.5; }
+  }
+
+  .shimmer-bg {
+    background: linear-gradient(90deg, hsl(var(--card)) 25%, hsl(var(--accent)) 50%, hsl(var(--card)) 75%);
+    background-size: 200% 100%;
+    animation: shimmer 2s infinite linear;
+  }
+}
+
+/* Scrollbar styling */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: hsl(var(--background));
+}
+
+::-webkit-scrollbar-thumb {
+  background: hsl(var(--border));
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: hsl(var(--muted-foreground));
+}
+
+/* ===== LANDING PAGE LIGHT THEME ===== */
+.landing-page {
+  background: #F8FAFC;
+  color: #0F172A;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+.landing-page * {
+  border-color: #E2E8F0;
+}
+
+/* Grid background pattern for hero */
+.landing-grid-bg {
+  background-image:
+    linear-gradient(rgba(15, 23, 42, 0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(15, 23, 42, 0.03) 1px, transparent 1px);
+  background-size: 60px 60px;
+}
+
+/* Radial gradient utility */
+.bg-gradient-radial {
+  background: radial-gradient(ellipse at center, var(--tw-gradient-from) 0%, var(--tw-gradient-via) 50%, var(--tw-gradient-to) 100%);
+}
+
+/* Landing page scrollbar override */
+.landing-page::-webkit-scrollbar-track {
+  background: #F8FAFC;
+}
+
+.landing-page::-webkit-scrollbar-thumb {
+  background: #CBD5E1;
+}
+
+.landing-page::-webkit-scrollbar-thumb:hover {
+  background: #94A3B8;
+}
+
