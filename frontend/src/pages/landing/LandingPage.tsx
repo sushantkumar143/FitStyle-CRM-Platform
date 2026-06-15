@@ -4,6 +4,7 @@ import HeroSection from './HeroSection'
 import SocialProofSection from './SocialProofSection'
 import FeaturesSection from './FeaturesSection'
 import AICopilotShowcase from './AICopilotShowcase'
+import AgenticWorkflowSection from './AgenticWorkflowSection'
 import DashboardPreviewSection from './DashboardPreviewSection'
 import AnalyticsShowcase from './AnalyticsShowcase'
 import AIInsightsSection from './AIInsightsSection'
@@ -35,6 +36,7 @@ export default function LandingPage() {
         <SocialProofSection />
         <FeaturesSection />
         <AICopilotShowcase />
+        <AgenticWorkflowSection />
         <DashboardPreviewSection />
         <AnalyticsShowcase />
         <AIInsightsSection />
