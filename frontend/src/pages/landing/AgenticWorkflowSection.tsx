@@ -1,4 +1,4 @@
-import { motion, useInView } from 'framer-motion'
+import { motion, useInView, type Variants } from 'framer-motion'
 import { useRef } from 'react'
 import { Bot, Target, Megaphone, Send, BarChart3, Bell, CheckCircle2, ArrowRight, Sparkles, Zap, Shield } from 'lucide-react'
 
@@ -59,13 +59,13 @@ const steps = [
   },
 ]
 
-const cardVariants = {
+const cardVariants: Variants = {
   hidden: { opacity: 0, y: 40, rotateX: 15 },
   visible: (i: number) => ({
     opacity: 1,
     y: 0,
     rotateX: 0,
-    transition: { delay: i * 0.15, duration: 0.6, ease: 'easeOut' },
+    transition: { delay: i * 0.15, duration: 0.6, ease: [0.16, 1, 0.3, 1] },
   }),
 }
 
