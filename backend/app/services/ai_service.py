@@ -11,29 +11,139 @@ def _get_client():
 
     if provider == "groq":
         from groq import Groq
-        return Groq(api_key=settings.GROQ_API_KEY), "llama-3.3-70b-versatile"
+        # Prefer GROQ_API_KEY_1 if configured, fallback to GROQ_API_KEY
+        api_key = settings.GROQ_API_KEY_1 or settings.GROQ_API_KEY
+        return Groq(api_key=api_key), "llama-3.3-70b-versatile"
     else:
         from openai import OpenAI
         return OpenAI(api_key=settings.OPENAI_API_KEY), "gpt-4o-mini"
 
 
 def _chat(system_prompt: str, user_message: str) -> str:
-    """Make a synchronous chat completion call."""
-    try:
-        client, model = _get_client()
-        response = client.chat.completions.create(
-            model=model,
-            messages=[
-                {"role": "system", "content": system_prompt},
-                {"role": "user", "content": user_message},
-            ],
-            temperature=0.7,
-            max_tokens=1500,
-        )
-        return response.choices[0].message.content
-    except Exception as e:
-        logger.error(f"AI service error: {e}")
-        return _fallback_response(user_message)
+    """Make a synchronous chat completion call with multi-LLM fallback architecture."""
+    provider = settings.AI_PROVIDER.lower()
+    candidates = []
+
+    # Helper to check if a key is a placeholder
+    def is_placeholder(key: str) -> bool:
+        if not key:
+            return True
+        k_lower = key.lower()
+        return "your-" in k_lower or "apikey" in k_lower or "<" in k_lower or ">" in k_lower
+
+    if provider == "groq":
+        # 1. Collect configured Groq keys
+        raw_keys = [
+            ("Groq (Key 1)", settings.GROQ_API_KEY_1),
+            ("Groq (Key 2)", settings.GROQ_API_KEY_2),
+            ("Groq (Key 3)", settings.GROQ_API_KEY_3)
+        ]
+        
+        # Keep non-empty keys
+        groq_candidates = [(name, key) for name, key in raw_keys if key and key.strip()]
+        
+        # Heuristic: Filter out placeholders IF we have a valid default GROQ_API_KEY
+        if settings.GROQ_API_KEY and not is_placeholder(settings.GROQ_API_KEY):
+            # If any of the numbered keys are placeholders, filter them out and prefer the valid default key
+            filtered_candidates = []
+            for name, key in groq_candidates:
+                if is_placeholder(key):
+                    logger.info(f"Filtering out placeholder key for {name} in favor of valid default GROQ_API_KEY")
+                else:
+                    filtered_candidates.append((name, key))
+            
+            # If all numbered keys were filtered out, insert the valid default key as primary candidate
+            if not filtered_candidates:
+                filtered_candidates.append(("Groq (Default)", settings.GROQ_API_KEY))
+            groq_candidates = filtered_candidates
+            
+        # Add Groq candidates to our execution list
+        for name, api_key in groq_candidates:
+            candidates.append({
+                "name": name,
+                "type": "groq",
+                "api_key": api_key,
+                "model": "llama-3.3-70b-versatile"
+            })
+            
+    elif provider == "openai":
+        if settings.OPENAI_API_KEY and not is_placeholder(settings.OPENAI_API_KEY):
+            candidates.append({
+                "name": "OpenAI",
+                "type": "openai",
+                "api_key": settings.OPENAI_API_KEY,
+                "model": "gpt-4o-mini"
+            })
+
+    # 2. Always append Ollama as the local backup option
+    # Verify if Ollama endpoint looks configured (not empty)
+    if settings.OLLAMA_BASE_URL:
+        candidates.append({
+            "name": "Ollama (Local Backup)",
+            "type": "ollama",
+            "base_url": settings.OLLAMA_BASE_URL,
+            "model": settings.OLLAMA_MODEL
+        })
+
+    # 3. Try candidates sequentially
+    for candidate in candidates:
+        logger.info(f"Attempting chat completion with provider: {candidate['name']}")
+        try:
+            if candidate["type"] == "groq":
+                from groq import Groq
+                client = Groq(api_key=candidate["api_key"])
+                response = client.chat.completions.create(
+                    model=candidate["model"],
+                    messages=[
+                        {"role": "system", "content": system_prompt},
+                        {"role": "user", "content": user_message},
+                    ],
+                    temperature=0.7,
+                    max_tokens=1500,
+                )
+                return response.choices[0].message.content
+
+            elif candidate["type"] == "openai":
+                from openai import OpenAI
+                client = OpenAI(api_key=candidate["api_key"])
+                response = client.chat.completions.create(
+                    model=candidate["model"],
+                    messages=[
+                        {"role": "system", "content": system_prompt},
+                        {"role": "user", "content": user_message},
+                    ],
+                    temperature=0.7,
+                    max_tokens=1500,
+                )
+                return response.choices[0].message.content
+
+            elif candidate["type"] == "ollama":
+                from openai import OpenAI
+                # Use standard OpenAI client pointing to Ollama's local endpoint
+                # Since Ollama response time is larger, we should support it but set a timeout (e.g. 60s / 1 min)
+                # so it doesn't freeze the backend indefinitely if Ollama is not running or slow.
+                client = OpenAI(base_url=candidate["base_url"], api_key="ollama")
+                response = client.chat.completions.create(
+                    model=candidate["model"],
+                    messages=[
+                        {"role": "system", "content": system_prompt},
+                        {"role": "user", "content": user_message},
+                    ],
+                    temperature=0.7,
+                    max_tokens=1500,
+                    timeout=60.0
+                )
+                return response.choices[0].message.content
+
+        except Exception as e:
+            # Catch all exceptions (connection error, API error, rate limits, timeouts)
+            # Log warning and proceed to the next fallback candidate
+            logger.warning(f"Failed chat completion call with {candidate['name']}: {e}")
+            continue
+
+    # 4. If all candidates failed, return the fallback response
+    logger.critical("All AI LLM providers and fallbacks failed!")
+    return _fallback_response(user_message)
 
 
 def _fallback_response(context: str = "") -> str:

@@ -25,7 +25,14 @@ class Settings(BaseSettings):
     # AI
     AI_PROVIDER: str = "groq"
     GROQ_API_KEY: str = ""
+    GROQ_API_KEY_1: str = ""
+    GROQ_API_KEY_2: str = ""
+    GROQ_API_KEY_3: str = ""
     OPENAI_API_KEY: str = ""
+
+    # Ollama Settings
+    OLLAMA_BASE_URL: str = "http://localhost:11434/v1"
+    OLLAMA_MODEL: str = "llama3"
 
     # Services
     CHANNEL_SERVICE_URL: str = "http://channel-service:8001"
