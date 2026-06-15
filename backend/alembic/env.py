@@ -15,7 +15,18 @@ if config.config_file_name is not None:
 target_metadata = Base.metadata
 
 # Override URL from env
-db_url = os.getenv("SYNC_DATABASE_URL", config.get_main_option("sqlalchemy.url"))
+db_url = os.getenv("SYNC_DATABASE_URL")
+if not db_url:
+    db_url = os.getenv("DATABASE_URL")
+    if db_url:
+        if db_url.startswith("postgres://"):
+            db_url = db_url.replace("postgres://", "postgresql://", 1)
+        if "+asyncpg" in db_url:
+            db_url = db_url.replace("+asyncpg", "")
+
+if not db_url:
+    db_url = config.get_main_option("sqlalchemy.url")
+
 config.set_main_option("sqlalchemy.url", db_url)
 
 
